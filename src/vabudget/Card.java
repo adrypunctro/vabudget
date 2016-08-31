@@ -21,6 +21,8 @@ public interface Card {
      */
     public int getId();
     
+    public int getOwnerId();
+    
     /**
      *
      * @return

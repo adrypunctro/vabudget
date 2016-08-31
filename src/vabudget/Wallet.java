@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -23,7 +22,7 @@ public interface Wallet {
      * @param view
      * @return
      */
-    public boolean connectWith(Model model);
+    public boolean connectWith(DAOFactory model);
     
 
     /**
@@ -34,13 +33,13 @@ public interface Wallet {
      */
     public int addCard(int ownerId, String name);
 
-    public int addCard(int ownerId, String name, String balance);
+    public int addCard(int ownerId, String name, BigDecimal initAmount);
 
     public boolean removeCard(int cardId);
 
     public Card getCard(int cardId);
 
-    public List<Card> getCards();
+    public List<Card> getCards(int userId);
     
     /**
      *
@@ -53,15 +52,11 @@ public interface Wallet {
      */
     public boolean income(int cardId, int userId, BigDecimal amount, String description, Date datetime);
     
+    public boolean incomeDistrib(int distribId, int userId, BigDecimal amount, String description, Date datetime);
+    
     public boolean expense(int cardId, int userId, BigDecimal amount, String description, Date datetime);
 
     public List<Transaction> history(int cardId);
-
-    public List<Transaction> history(int cardId, int userId);
-    
-    public List<Transaction> history(int cardId, Date begin, Date end);
-    
-    public List<Transaction> history(int cardId, int userId, Date begin, Date end);
     
     /**
      * Share account with another person.
@@ -71,7 +66,7 @@ public interface Wallet {
 
     public boolean removeShare(int cardId, int personId);
     
-    public Map<Integer,String> getShared(int cardId);
+    public List<Share> getShared(int cardId);
     
     public boolean sharedAccept(int cardId, int personId);
     
@@ -82,18 +77,21 @@ public interface Wallet {
      * @param ratio
      * @return
      */
-    public boolean addIncomeDistribution(Map<Integer, Integer> ratio, String label);
+    public int addDistribution(int ownerId, String label, Map<Integer, Integer> ratio);
     
-    public boolean removeIncomeDistribution(int distribId);
+    public boolean removeDistribution(int distribId);
     
-    public Map<Integer, Integer> getIncomeDistribution(int distribId);
+    public Distribution getDistribution(int distribId);
     
-    public Set<Integer> shareIncomeDistribution(int distribId, int personId);
+    public List<Distribution> getDistributions(int personId);
     
-    public boolean removeShareIncomeDistribution(int distribId, int personId);
     
-    public boolean sharedIncomeDistributionAccept(int distribId, int personId);
+    public boolean shareDistributionWith(int distribId, int personId);
     
-    public boolean sharedIncomeDistributionReject(int distribId, int personId);
+    public boolean removeShareDistribution(int distribId, int personId);
+    
+    public boolean sharedDistributionAccept(int distribId, int personId);
+    
+    public boolean sharedDistributionReject(int distribId, int personId);
     
 }

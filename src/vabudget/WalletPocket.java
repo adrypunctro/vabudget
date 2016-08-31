@@ -6,20 +6,10 @@
 package vabudget;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static vabudget.DebitCard.model;
 
 /**
  *
@@ -27,267 +17,197 @@ import static vabudget.DebitCard.model;
  */
 public class WalletPocket implements Wallet {
 
-    private Model model;
-    final private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private DAOFactory model;
     
     @Override
-    public boolean connectWith(Model model) {
+    public boolean connectWith(DAOFactory model) {
+        if(model == null) {
+            return false;
+        }
+        
         this.model = model;
-        
-        DebitCard.model = model;
-        
-        model.connect();
-        model.create();
-        
         return true;
     }
     
 
     @Override
     public int addCard(int ownerId, String label) {
-        Map<String, String> vals = new HashMap<>();
-        vals.put(Model.CARDS_OWNER_ID, String.valueOf(ownerId));
-        vals.put(Model.CARDS_LABEL, label);
-        vals.put(Model.CARDS_AMOUNT, "0");
-        int cardId = model.insertWithReturn(Model.CARDS_TABLE, vals);
-        if (cardId > 0) {
-            return cardId;
-        }
-        return 0;
+        CardDAO cardDAO = model.getCardDAO();
+        return cardDAO.insertCard(ownerId, label, new BigDecimal("0.00"));
     }
     
     @Override
-    public int addCard(int ownerId, String label, String balance) {
-        Map<String, String> vals = new HashMap<>();
-        vals.put(Model.CARDS_OWNER_ID, String.valueOf(ownerId));
-        vals.put(Model.CARDS_LABEL, label);
-        vals.put(Model.CARDS_AMOUNT, balance);
-        int cardId = model.insertWithReturn(Model.CARDS_TABLE, vals);
-        if (cardId > 0) {
-            return cardId;
-        }
-        return 0;
+    public int addCard(int ownerId, String label, BigDecimal initAmount) {
+        CardDAO cardDAO = model.getCardDAO();
+        return cardDAO.insertCard(ownerId, label, initAmount);
     }
     
     @Override
     public boolean removeCard(int cardId) {
-        Map<String, String> where = new HashMap<>();
-        where.put(Model.CARDS_CARD_ID, String.valueOf(cardId));
-        return model.delete(Model.CARDS_TABLE, where);
+        CardDAO cardDAO = model.getCardDAO();
+        return cardDAO.deleteCard(cardId);
     }
 
     @Override
     public Card getCard(int cardId) {
-        try {
-            Map<String, String> where = new HashMap<>();
-            where.put(Model.CARDS_CARD_ID, String.valueOf(cardId));
-            Map<String, Object> item = model.selectOne(Model.CARDS_TABLE, where);
-            return new DebitCard(item);
-        } catch (Exception ex) {
-            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        CardDAO cardDAO = model.getCardDAO();
+        return cardDAO.findCard(cardId);
     }
 
     @Override
-    public List<Card> getCards() {
-        try {
-            List<Card> results = new LinkedList<>();
-            List<HashMap<String, Object>> rows = model.select(Model.CARDS_TABLE, new HashMap<>());
-            for(HashMap<String, Object> row : rows) {
-                int cardId = (int)row.get(Model.CARDS_CARD_ID);
-                results.add(getCard(cardId));
-            }
-            return results;
-        } catch (Exception ex) {
-            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    public List<Card> getCards(int userId) {
+        CardDAO cardDAO = model.getCardDAO();
+        return cardDAO.selectCards(userId);
     }
 
     @Override
-    public boolean income(int cardId, int userId, BigDecimal new_amount, String description, Date datetime) {
-        try {
-            Map<String, String> sets = new HashMap<>();
-            sets.put(Model.CARDS_AMOUNT, Model.CARDS_AMOUNT+"+"+new_amount);
-            Map<String, String> where = new HashMap<>();
-            where.put(Model.CARDS_CARD_ID, String.valueOf(cardId));
-            model.update(Model.CARDS_TABLE, where, new HashMap<>(), sets);
-
-            Map<String, String> vals = new HashMap<>();
-            vals.put(Model.TRANSACTIONS_CARD_ID, String.valueOf(cardId));
-            vals.put(Model.TRANSACTIONS_USER_ID, String.valueOf(userId));
-            vals.put(Model.TRANSACTIONS_DESCRIPTION, description);
-            vals.put(Model.TRANSACTIONS_AMOUNT, new_amount.toPlainString());
-            vals.put(Model.TRANSACTIONS_DATE, dateFormat.format(datetime));
-            vals.put(Model.TRANSACTIONS_TYPE, TransactionType.Income.name());
-            model.insert(Model.TRANSACTIONS_TABLE, vals);
-            
-            return true;
-        } catch (Exception ex) {
-            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
+    public boolean income(int cardId, int userId, BigDecimal amount, String description, Date datetime) {
+        TransactionDAO transDAO = model.getTransactionDAO();
+        return transDAO.insertIncome(userId, cardId, description, amount, datetime, TransactionType.Income.name());
     }
 
     @Override
-    public boolean expense(int cardId, int userId, BigDecimal new_amount, String description, Date datetime) {
-        try {
-            Map<String, String> sets = new HashMap<>();
-            sets.put(Model.CARDS_AMOUNT, Model.CARDS_AMOUNT+"-"+new_amount);
-            Map<String, String> where = new HashMap<>();
-            where.put(Model.CARDS_CARD_ID, String.valueOf(cardId));
-            model.update(Model.CARDS_TABLE, where, new HashMap<>(), sets);
-
-            Map<String, String> vals = new HashMap<>();
-            vals.put(Model.TRANSACTIONS_CARD_ID, String.valueOf(cardId));
-            vals.put(Model.TRANSACTIONS_USER_ID, String.valueOf(userId));
-            vals.put(Model.TRANSACTIONS_DESCRIPTION, description);
-            vals.put(Model.TRANSACTIONS_AMOUNT, new_amount.toPlainString());
-            vals.put(Model.TRANSACTIONS_DATE, dateFormat.format(datetime));
-            vals.put(Model.TRANSACTIONS_TYPE, TransactionType.Expense.name());
-            model.insert(Model.TRANSACTIONS_TABLE, vals);
-            
-            return true;
-        } catch (Exception ex) {
-            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
+    public boolean incomeDistrib(int distribId, int userId, BigDecimal amount, String description, Date datetime) {
+        DistributionDAO distribDAO = model.getDistributionDAO();
+        TransactionDAO transDAO = model.getTransactionDAO();
+        
+        List<Transaction> transactions = new ArrayList<>();
+        Distribution distrib = distribDAO.findDistribution(distribId);
+        for(int cardId : distrib.getRatio().keySet()) {
+            int percent = distrib.getRatio().get(cardId);
+            BigDecimal incomeValue = new BigDecimal(amount.floatValue()*(percent/100.0f));
+            transactions.add(
+                new Transaction(0, cardId, userId, description+ " Distrib: "+distrib.getLabel(), incomeValue, datetime, TransactionType.Income)
+            );
         }
-        return false;
+        
+        return transDAO.insertMultipleIncome(transactions);
+    }
+    
+    @Override
+    public boolean expense(int cardId, int userId, BigDecimal amount, String description, Date datetime) {
+        TransactionDAO transDAO = model.getTransactionDAO();
+        return transDAO.insertExpense(userId, cardId, description, amount, datetime, TransactionType.Expense.name());
     }
 
     @Override
     public List<Transaction> history(int cardId) {
-        try {
-            List<Transaction> results = new ArrayList<>();
-            Map<String, String> where1 = new HashMap<>();
-            where1.put(Model.TRANSACTIONS_CARD_ID, String.valueOf(cardId));
-            List<HashMap<String, Object>> rows = model.select(Model.TRANSACTIONS_TABLE, where1);
-            for(HashMap<String, Object> row : rows) {
-                int transId = (int)row.get(Model.CARDS_CARD_ID);
-                Map<String, String> where = new HashMap<>();
-                where.put(Model.TRANSACTIONS_TRANSACTION_ID, String.valueOf(transId));
-                Map<String, Object> item = model.selectOne(Model.TRANSACTIONS_TABLE, where);
-                try {
-                    results.add(new Transaction(
-                            new BigDecimal(String.valueOf(item.get(Model.TRANSACTIONS_AMOUNT))),
-                            (String)item.get(Model.TRANSACTIONS_DESCRIPTION),
-                            dateFormat.parse(item.get(Model.TRANSACTIONS_DATE).toString()),
-                            TransactionType.valueOf((String)item.get(Model.TRANSACTIONS_TYPE))
-                        )
-                    );
-                } catch (ParseException ex) {
-                    Logger.getLogger(DebitCard.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            return results;
-        } catch (Exception ex) {
-            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-    
-    @Override
-    public List<Transaction> history(int cardId, int userId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Transaction> history(int cardId, Date begin, Date end) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Transaction> history(int cardId, int userId, Date begin, Date end) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TransactionDAO transDAO = model.getTransactionDAO();
+        return transDAO.selectTransaction(cardId);
     }
 
     @Override
     public boolean shareWith(int cardId, int personId) {
-        Map<Integer,String> shared = getShared(cardId);
-        if (shared.keySet().contains(personId)) {
-            return false;
-        }
-        
-        Map<String, String> vals = new HashMap<>();
-        vals.put(Model.SHARED_CARD_ID, String.valueOf(cardId));
-        vals.put(Model.SHARED_PERSON_ID, String.valueOf(personId));
-        vals.put(Model.SHARED_STATUS, "0");
-        
-        return model.insert(Model.SHARED_TABLE, vals);
+        ShareDAO shareDAO = model.getShareDAO();
+        return shareDAO.insertShare(cardId, personId);
     }
 
     @Override
     public boolean removeShare(int cardId, int personId) {
-        Map<String, String> where = new HashMap<>();
-        where.put(Model.SHARED_CARD_ID, String.valueOf(cardId));
-        where.put(Model.SHARED_PERSON_ID, String.valueOf(personId));
-        return model.delete(Model.SHARED_TABLE, where);
+        ShareDAO shareDAO = model.getShareDAO();
+        return shareDAO.deleteShare(cardId, personId);
     }
 
     @Override
-    public Map<Integer,String> getShared(int cardId) {
-        try {
-            Map<Integer,String> results = new HashMap<>();
-            Map<String, String> where = new HashMap<>();
-            where.put(Model.SHARED_CARD_ID, String.valueOf(cardId));
-            List<HashMap<String, Object>> rows = model.select(Model.SHARED_TABLE, where);
-            for(HashMap<String, Object> row : rows) {
-                results.put(
-                    (int)row.get(Model.SHARED_PERSON_ID),
-                    (String)row.get(Model.SHARED_STATUS)
-                );
-            }
-            return results;
-        } catch (Exception ex) {
-            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    public List<Share> getShared(int cardId) {
+        ShareDAO shareDAO = model.getShareDAO();
+        return shareDAO.selectShared(cardId);
     }
 
     @Override
     public boolean sharedAccept(int cardId, int personId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ShareDAO shareDAO = model.getShareDAO();
+        return shareDAO.acceptShare(cardId, personId);
     }
 
     @Override
     public boolean sharedReject(int cardId, int personId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ShareDAO shareDAO = model.getShareDAO();
+        return shareDAO.rejectShare(cardId, personId);
     }
 
     @Override
-    public boolean addIncomeDistribution(Map<Integer, Integer> ratio, String label) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int addDistribution(int ownerId, String label, Map<Integer, Integer> ratio) {
+        DistributionDAO distribDAO = model.getDistributionDAO();
+        return distribDAO.insertDistribution(ownerId, label, ratio);
     }
 
     @Override
-    public boolean removeIncomeDistribution(int distribId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean removeDistribution(int distribId) {
+        DistributionDAO distribDAO = model.getDistributionDAO();
+        return distribDAO.deleteDistribution(distribId);
     }
 
     @Override
-    public Map<Integer, Integer> getIncomeDistribution(int distribId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Distribution getDistribution(int distribId) {
+        DistributionDAO distribDAO = model.getDistributionDAO();
+        return distribDAO.findDistribution(distribId);
     }
 
     @Override
-    public Set<Integer> shareIncomeDistribution(int distribId, int personId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean shareDistributionWith(int distribId, int personId) {
+        return false;// TODO: Not yet!
+        /*Map<String, String> vals = new HashMap<>();
+        vals.put(MySQLConfig.DISTRIBUTIONS_SHARED_DISTRIB_ID, String.valueOf(distribId));
+        vals.put(MySQLConfig.DISTRIBUTIONS_SHARED_PERSON_ID, String.valueOf(personId));
+        vals.put(MySQLConfig.DISTRIBUTIONS_SHARED_STATUS, "0");
+        
+        return model.insert(MySQLConfig.DISTRIBUTIONS_SHARED_TABLE, vals);*/
     }
 
     @Override
-    public boolean removeShareIncomeDistribution(int distribId, int personId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean removeShareDistribution(int distribId, int personId) {
+        return false;// TODO: Not yet!
+        /*Map<String, String> where = new HashMap<>();
+        where.put(MySQLConfig.DISTRIBUTIONS_SHARED_DISTRIB_ID, String.valueOf(distribId));
+        where.put(MySQLConfig.DISTRIBUTIONS_SHARED_PERSON_ID, String.valueOf(personId));
+        return model.delete(MySQLConfig.DISTRIBUTIONS_SHARED_TABLE, where);*/
     }
 
     @Override
-    public boolean sharedIncomeDistributionAccept(int distribId, int personId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean sharedDistributionAccept(int distribId, int personId) {
+        return false;// TODO: Not yet!
+        /*try {
+            Map<String, String> sets = new HashMap<>();
+            sets.put(MySQLConfig.DISTRIBUTIONS_SHARED_STATUS, "1");
+            
+            Map<String, String> where = new HashMap<>();
+            where.put(MySQLConfig.DISTRIBUTIONS_SHARED_DISTRIB_ID, String.valueOf(distribId));
+            where.put(MySQLConfig.DISTRIBUTIONS_SHARED_PERSON_ID, String.valueOf(personId));
+            
+            model.update(MySQLConfig.DISTRIBUTIONS_SHARED_TABLE, where, sets);
+
+            return true;
+        } catch (Exception ex) {
+            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;*/
     }
 
     @Override
-    public boolean sharedIncomeDistributionReject(int distribId, int personId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean sharedDistributionReject(int distribId, int personId) {
+        return false;// TODO: Not yet!
+        /*try {
+            Map<String, String> sets = new HashMap<>();
+            sets.put(MySQLConfig.DISTRIBUTIONS_SHARED_STATUS, "-1");
+            
+            Map<String, String> where = new HashMap<>();
+            where.put(MySQLConfig.DISTRIBUTIONS_SHARED_DISTRIB_ID, String.valueOf(distribId));
+            where.put(MySQLConfig.DISTRIBUTIONS_SHARED_PERSON_ID, String.valueOf(personId));
+            
+            model.update(MySQLConfig.DISTRIBUTIONS_SHARED_TABLE, where, sets);
+
+            return true;
+        } catch (Exception ex) {
+            Logger.getLogger(WalletPocket.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;*/
     }
 
+    @Override
+    public List<Distribution> getDistributions(int personId) {
+        DistributionDAO distribDAO = model.getDistributionDAO();
+        return distribDAO.selectDistributions(personId);
+    }
 
 }

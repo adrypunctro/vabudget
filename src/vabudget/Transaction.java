@@ -17,19 +17,37 @@ enum TransactionType {
 }
 
 public class Transaction {
+    final private int id;
+    final private int cardId;
+    final private int userId;
     final private BigDecimal amount;
     final private String description;
     final private Date datetime;
     final private TransactionType type;
 
-    Transaction(BigDecimal amount, String description, Date datetime, TransactionType type)
+    Transaction(int transId, int cardId, int userId, String description, BigDecimal amount, Date datetime, TransactionType type)
     {
+        this.id = transId;
+        this.cardId = cardId;
+        this.userId = userId;
         this.amount = amount;
         this.description = description;
         this.datetime = datetime;
         this.type = type;
     }
 
+    public int getId() {
+        return id;
+    }
+    
+    public int getCardId() {
+        return cardId;
+    }
+    
+    public int getUserId() {
+        return userId;
+    }
+    
     public TransactionType getType()
     {
         return type;

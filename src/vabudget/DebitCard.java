@@ -5,45 +5,42 @@
  */
 package vabudget;
 
+import config.MySQLConfig;
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author Adrian Simionescu
  */
-public class DebitCard implements Card {
+public class DebitCard implements Card, java.io.Serializable {
 
-    public static Model model = null;
+    public static MySQLConfig model = null;
     
     final private int owner_id;
     final private int id;
     final private String label;
-    private BigDecimal amount;
-    final private Set<Integer> persons = new HashSet<Integer>();
+    private final BigDecimal amount;
+    final private Set<Integer> persons = new HashSet<>();
     
-    public DebitCard(Map<String, Object> data) {
-        id = (int)data.get(Model.CARDS_CARD_ID);
-        owner_id = (int)data.get(Model.CARDS_OWNER_ID);
-        label = (String)data.get(Model.CARDS_LABEL);
-        amount = new BigDecimal(String.valueOf(data.get(Model.CARDS_AMOUNT)));
+    public DebitCard(int cardId, int ownerId, String label, BigDecimal amount) {
+        id = cardId;
+        owner_id = ownerId;
+        this.label = label;
+        this.amount = amount;
         amount.setScale(2, BigDecimal.ROUND_HALF_EVEN);
     }
     
     @Override
     public int getId() {
         return id;
+    }
+    
+    @Override
+    public int getOwnerId() {
+        return owner_id;
     }
     
     @Override
