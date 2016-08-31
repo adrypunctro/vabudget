@@ -10,7 +10,7 @@ It is a java application, an extension of vadry.ro project, that helps you manag
 
 public int **addCard**(int ownerId, String label);
 ```java
-IWallet wallet = new Wallet();
+Wallet wallet = new WalletPoket();
 
 int ownerId = 1;// My Account ID
 int privateCardId = wallet.addCard(ownerId, "Economy 1");
@@ -63,31 +63,31 @@ public boolean **sharedReject**(int cardId, int personId);
 
 ---
 
-public int addDistribution(int ownerId, String label, Map<Integer, Integer> ratio);
+public int **addDistribution**(int ownerId, String label, Map<Integer, Integer> ratio);
 ```java
 ```
-public boolean removeDistribution(int distribId);
+public boolean **removeDistribution**(int distribId);
 ```java
 ```
-public Distribution getDistribution(int distribId);
+public Distribution **getDistribution**(int distribId);
 ```java
 ```
-public List\<Distribution\> getDistributions(int personId);
+public List\<Distribution\> **getDistributions**(int personId);
 ```java
 ```
 
 ---
 
-public boolean shareDistributionWith(int distribId, int personId);
+public boolean **shareDistributionWith**(int distribId, int personId);
 ```java
 ```
-public boolean removeShareDistribution(int distribId, int personId);
+public boolean **removeShareDistribution**(int distribId, int personId);
 ```java
 ```
-public boolean sharedDistributionAccept(int distribId, int personId);
+public boolean **sharedDistributionAccept**(int distribId, int personId);
 ```java
 ```
-public boolean sharedDistributionReject(int distribId, int personId);
+public boolean **sharedDistributionReject**(int distribId, int personId);
 ```java
 ```
 
