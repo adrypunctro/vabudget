@@ -9,6 +9,7 @@ import vabudget.WalletPocket;
 import vabudget.Transaction;
 import vabudget.Card;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +30,8 @@ import vabudget.Share;
  */
 public class ApiJUnitTest {
     
+    private static Wallet wallet;
+    
     public ApiJUnitTest() {
         System.out.println("Inside testPrintMessage()");
         
@@ -36,7 +39,10 @@ public class ApiJUnitTest {
     
     @BeforeClass
     public static void setUpClass() {
-        
+        wallet = new WalletPocket();
+        wallet.connectWith(
+            DAOFactory.getDAOFactory(DAOFactory.MYSQL)
+        );
     }
     
     @AfterClass
@@ -53,174 +59,263 @@ public class ApiJUnitTest {
     }
 
     @Test
-    public void testOperations() {
-        // Config
+    public void card() {
         int ownerId = 1;
         int personId = 2;
-        String privateCardLabel = "Private Debit Card";
-        String sharedCardLabel  = "Shared Debit Card";
-        // ------
         
-        Wallet wallet = new WalletPocket();
-        Map<String, String> config = new HashMap<>();
-        wallet.connectWith(
-            DAOFactory.getDAOFactory(DAOFactory.MYSQL)
-        );
+        // Card with 0
+        int cardNoInitId = wallet.addCard(ownerId, "Card 0");
+        assertTrue("Creating card failed.", (cardNoInitId>0));
         
-        // Create two accounts
-        int privateCardId = wallet.addCard(ownerId, privateCardLabel);
-        assertTrue("The account could not be created.", (privateCardId>0));
+        Card cardNoInit = wallet.getCard(cardNoInitId);
+        assertNotNull("Get card failed.", cardNoInit);
+        
+        assertEquals("Wrong label.", "Card 0", cardNoInit.getLabel());
+        assertTrue("Wrong amount.", new BigDecimal(BigInteger.ZERO).compareTo(cardNoInit.getAmount()) == 0);
+        assertEquals("Wrong ownerId.", ownerId, cardNoInit.getOwnerId());  
+        
+        // Card with 100 init
+        int cardWithInitId = wallet.addCard(ownerId, "Card 100", new BigDecimal(100));
+        assertTrue("Creating card failed.", (cardWithInitId>0));
+        
+        Card cardWithInit = wallet.getCard(cardWithInitId);
+        assertNotNull("Get card failed.", cardWithInit);
+        
+        assertEquals("Wrong label.", "Card 100", cardWithInit.getLabel());
+        assertTrue("Wrong amount.", new BigDecimal(100).compareTo(cardWithInit.getAmount()) == 0);
+        assertEquals("Wrong ownerId.", ownerId, cardWithInit.getOwnerId());
+        
+        // Card with 22.20 init
+        int cardWithInit22Id = wallet.addCard(ownerId, "Card 22", new BigDecimal("22.20"));
+        assertTrue("Creating card failed.", (cardWithInit22Id>0));
+        
+        Card cardWithInit22 = wallet.getCard(cardWithInit22Id);
+        assertNotNull("Get card failed.", cardWithInit22);
+        
+        assertEquals("Wrong label.", "Card 22", cardWithInit22.getLabel());
+        assertTrue("Wrong amount.", new BigDecimal("22.20").compareTo(cardWithInit22.getAmount()) == 0);
+        assertEquals("Wrong ownerId.", ownerId, cardWithInit22.getOwnerId());
+        
+        boolean card1Deleted = wallet.removeCard(cardNoInitId);
+        assertTrue("Deleting card failed.", card1Deleted);
+        
+        boolean card2Deleted = wallet.removeCard(cardWithInitId);
+        assertTrue("Deleting card failed.", card2Deleted);
+        
+        boolean card3Deleted = wallet.removeCard(cardWithInit22Id);
+        assertTrue("Deleting card failed.", card3Deleted);
+    }
+    
+    @Test
+    public void shared() {
+        int ownerId = 1;
+        int personId = 2;
+        int person2Id = 3;
+        
+        int privateCardId = wallet.addCard(ownerId, "Private account");
+        assertTrue("Creating card failed.", (privateCardId>0));
+        
+        int sharedCardId = wallet.addCard(ownerId, "Shared account");
+        assertTrue("Creating card failed.", (sharedCardId>0));
+        
+        int shared2CardId = wallet.addCard(ownerId, "Shared2 account");
+        assertTrue("Creating card failed.", (shared2CardId>0));
         
         Card privateCard = wallet.getCard(privateCardId);
-
-        assertEquals("Wrong label.", privateCardLabel, privateCard.getLabel());
+        assertNotNull("Get card failed.", privateCard);
         
-        int sharedCardtId = wallet.addCard(ownerId, sharedCardLabel);
-        assertTrue("The account could not be created.", (sharedCardtId>0));
+        Card sharedCard = wallet.getCard(sharedCardId);
+        assertNotNull("Get card failed.", sharedCard);
         
-        Card sharedCard = wallet.getCard(sharedCardtId);
+        Card shared2Card = wallet.getCard(sharedCardId);
+        assertNotNull("Get card failed.", shared2Card);
         
-        assertEquals("Wrong label.", sharedCardLabel, sharedCard.getLabel());
+        boolean sharedok = wallet.shareWith(sharedCardId, personId);
+        assertTrue("Sharing card failed.", sharedok);
         
-        // Share account2 with person2
-        boolean sharedok = wallet.shareWith(sharedCardtId, personId);
-        assertTrue("The account could not be shared.", sharedok);
+        boolean shared2ok = wallet.shareWith(shared2CardId, person2Id);
+        assertTrue("Sharing card failed.", shared2ok);
         
-        // Show shared persons
-        List<Share> shareds = wallet.getShared(sharedCardtId);
-        
+        List<Share> shareds = wallet.getShared(sharedCardId);
         assertEquals("The number of shared is incorrect.", 1, shareds.size());
         
+        List<Share> shareds2 = wallet.getShared(shared2CardId);
+        assertEquals("The number of shared is incorrect.", 1, shareds2.size());
+        
         Share entry = shareds.iterator().next();
+        assertEquals("Incorect share cardId.", sharedCardId, entry.getCardId());
+        assertEquals("Incorect share personId.", personId, entry.getPersonId());
+        assertEquals("Incorect share default status.", "0", entry.getStatus());
         
-        assertSame("The partner is not correct..", personId, entry.getPersonId());
-        assertEquals("Default shared is incorrect.", "0", entry.getStatus());
+        Share entry2 = shareds2.iterator().next();
+        assertEquals("Incorect share cardId.", shared2CardId, entry2.getCardId());
+        assertEquals("Incorect share personId.", person2Id, entry2.getPersonId());
+        assertEquals("Incorect share default status.", "0", entry2.getStatus());
 
-        wallet.sharedAccept(sharedCardtId, personId);
+        boolean acceptRet = wallet.sharedAccept(sharedCardId, personId);
+        assertTrue("Accepting share failed.", acceptRet);
         
-        List<Share> sharedsUpdated = wallet.getShared(sharedCardtId);// Update!
+        boolean acceptRet2 = wallet.sharedReject(shared2CardId, person2Id);
+        assertTrue("Accepting share failed.", acceptRet2);
         
-        assertEquals("The number of shared is incorrect.", 1, sharedsUpdated.size());
+        List<Share> sharedsUpdated = wallet.getShared(sharedCardId);// Update!
+        assertEquals("The number of shared is incorrect.", 1, shareds.size());
+        
+        List<Share> sharedsUpdated2 = wallet.getShared(shared2CardId);// Update!
+        assertEquals("The number of shared is incorrect.", 1, shareds2.size());
         
         Share entryUpdated = sharedsUpdated.iterator().next();
+        assertEquals("Incorect share cardId.", sharedCardId, entryUpdated.getCardId());
+        assertEquals("Incorect share personId.", personId, entryUpdated.getPersonId());
+        assertEquals("Incorect share status.", "1", entryUpdated.getStatus());
         
-        assertSame("The partner is not correct..", personId, entryUpdated.getPersonId());
-        assertEquals("Shared status is incorrect.", "1", entryUpdated.getStatus());
+        Share entryUpdated2 = sharedsUpdated2.iterator().next();
+        assertEquals("Incorect share cardId.", shared2CardId, entryUpdated2.getCardId());
+        assertEquals("Incorect share personId.", person2Id, entryUpdated2.getPersonId());
+        assertEquals("Incorect share status.", "-1", entryUpdated2.getStatus());
         
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("0.00"), privateCard.getAmount());
+        boolean shareDeleted = wallet.removeShare(sharedCardId, personId);
+        assertTrue("Deleting share failed.", shareDeleted);
         
-        // Save an income
-        wallet.income(privateCardId, ownerId, new BigDecimal("110.00"), "", new Date());
-        privateCard = wallet.getCard(privateCardId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("110.00"), privateCard.getAmount());
+        boolean shareDeleted2 = wallet.removeShare(shared2CardId, person2Id);
+        assertTrue("Deleting share failed.", shareDeleted2);
         
-        wallet.income(privateCardId, ownerId, new BigDecimal("120.00"), "Some income.", new Date());
-        privateCard = wallet.getCard(privateCardId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("230.00"), privateCard.getAmount());
+        List<Share> sharedsUpdatedAD = wallet.getShared(sharedCardId);// Update!
+        assertEquals("The number of shared is incorrect.", 0, sharedsUpdatedAD.size());
         
-        wallet.income(privateCardId, ownerId, new BigDecimal("130.00"), "A high income.", new Date());
-        privateCard = wallet.getCard(privateCardId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("360.00"), privateCard.getAmount());
+        List<Share> sharedsUpdatedAD2 = wallet.getShared(shared2CardId);// Update!
+        assertEquals("The number of shared is incorrect.", 0, sharedsUpdatedAD2.size());
         
-        // Save an expense
-        wallet.expense(privateCardId, ownerId, new BigDecimal("210.00"), "", new Date());
-        privateCard = wallet.getCard(privateCardId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("150.00"), privateCard.getAmount());
-        wallet.expense(privateCardId, ownerId, new BigDecimal("220.00"), "Some expense.", new Date());
-        privateCard = wallet.getCard(privateCardId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("-70.00"), privateCard.getAmount());
-        wallet.expense(privateCardId, ownerId, new BigDecimal("230.00"), "A high expense.", new Date());
-        privateCard = wallet.getCard(privateCardId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("-300.00"), privateCard.getAmount());
+        boolean card1Deleted = wallet.removeCard(privateCardId);
+        assertTrue("Deleting card failed.", card1Deleted);
         
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("0.00"), sharedCard.getAmount());
+        boolean card2Deleted = wallet.removeCard(sharedCardId);
+        assertTrue("Deleting card failed.", card2Deleted);
         
-        // Save an income (shared account)
-        wallet.income(sharedCardtId, ownerId, new BigDecimal("310.10"), "", new Date());
-        sharedCard = wallet.getCard(sharedCardtId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("310.10"), sharedCard.getAmount());
-        wallet.income(sharedCardtId, personId, new BigDecimal("320.05"), "Some income - shared.", new Date());
-        sharedCard = wallet.getCard(sharedCardtId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("630.15"), sharedCard.getAmount());
-        wallet.income(sharedCardtId, personId, new BigDecimal("330.00"), "A high income - shared.", new Date());
-        sharedCard = wallet.getCard(sharedCardtId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("960.15"), sharedCard.getAmount());
+        boolean card3Deleted = wallet.removeCard(shared2CardId);
+        assertTrue("Deleting card failed.", card3Deleted);
+    }
+    
+    @Test
+    public void transaction() {
+        int ownerId = 1;
+        int personId = 2;
         
-        // Save an expense (shared account)
-        wallet.expense(sharedCardtId, ownerId, new BigDecimal("410.00"), "", new Date());
-        sharedCard = wallet.getCard(sharedCardtId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("550.15"), sharedCard.getAmount());
-        wallet.expense(sharedCardtId, personId, new BigDecimal("420.01"), "Some expense - shared.", new Date());
-        sharedCard = wallet.getCard(sharedCardtId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("130.14"), sharedCard.getAmount());
-        wallet.expense(sharedCardtId, ownerId, new BigDecimal("430.04"), "A high expense - shared.", new Date());
-        sharedCard = wallet.getCard(sharedCardtId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("-299.90"), sharedCard.getAmount());
+        int privateCard1Id = wallet.addCard(ownerId, "Private1 account");
+        assertTrue("Creating card failed.", (privateCard1Id>0));
         
-        // Income Distribution
-        Map<Integer, Integer> ratio = new HashMap<>();
-        ratio.put(privateCardId, 40);
-        ratio.put(sharedCardtId, 60);
-        int distribId = wallet.addDistribution(ownerId, "40-60", ratio);
-        assertTrue("The distribution could not be added.", (distribId>0));
+        int privateCard2Id = wallet.addCard(ownerId, "Private2 account");
+        assertTrue("Creating card failed.", (privateCard2Id>0));
         
-        /*List<Distribution> incomeDistributions = wallet.getDistributions(ownerId);
+        int sharedCardId = wallet.addCard(ownerId, "Private account");
+        assertTrue("Creating card failed.", (sharedCardId>0));
         
-        Distribution distrib = incomeDistributions.iterator().next();
+        boolean sharedok = wallet.shareWith(sharedCardId, personId);
+        assertTrue("Sharing card failed.", sharedok);
         
-        Map<Integer, Integer> distribRatio = distrib.getRatio();
+        boolean acceptRet = wallet.sharedAccept(sharedCardId, personId);
+        assertTrue("Accepting share failed.", acceptRet);
         
-        BigDecimal beforeAmount = privateCard.getAmount();
-        BigDecimal afterAmount = beforeAmount.add(new BigDecimal(1000*(distribRatio.get(privateCardId)/100.0f)));
-        afterAmount.setScale(2);
-        wallet.incomeDistrib(distrib.getId(), ownerId, new BigDecimal("1000.00"), "Big income.", new Date());
+        Card privateCard1 = wallet.getCard(privateCard1Id);
+        assertNotNull("Get card failed.", privateCard1);
         
-        privateCard = wallet.getCard(privateCardId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                afterAmount, privateCard.getAmount());
+        Card privateCard2 = wallet.getCard(privateCard2Id);
+        assertNotNull("Get card failed.", privateCard2);
         
-        sharedCard = wallet.getCard(sharedCardtId);// Update!
-        assertEquals("Account does not have the correct amount.",
-                new BigDecimal("499.90"), sharedCard.getAmount());*/
+        Card sharedCard = wallet.getCard(sharedCardId);
+        assertNotNull("Get card failed.", sharedCard);
         
         
-        // Show history
-        List<Transaction> privateTransactions = wallet.history(privateCardId);
+        boolean income1ok = wallet.income(privateCard1Id, ownerId, new BigDecimal(120), "Some income.", new Date());
+        assertTrue("Adding income failed.", income1ok);
+        
+        privateCard1 = wallet.getCard(privateCard1Id);// Update!
+        assertTrue("Wrong amount.", new BigDecimal(120).compareTo(privateCard1.getAmount()) == 0);
+        
+        boolean income2ok = wallet.income(privateCard1Id, ownerId, new BigDecimal(130), "A high income.", new Date());
+        assertTrue("Adding income failed.", income2ok);
+        
+        privateCard1 = wallet.getCard(privateCard1Id);// Update!
+        assertTrue("Wrong amount.", new BigDecimal(250).compareTo(privateCard1.getAmount()) == 0);
+        
+        boolean expense1ok = wallet.expense(privateCard1Id, ownerId, new BigDecimal(220), "Some expense.", new Date());
+        assertTrue("Adding expense failed.", expense1ok);
+        
+        privateCard1 = wallet.getCard(privateCard1Id);// Update!
+        assertTrue("Wrong amount.", new BigDecimal(30).compareTo(privateCard1.getAmount()) == 0);
+        
+        boolean expense2ok = wallet.expense(privateCard1Id, ownerId, new BigDecimal("233.36"), "A high expense.", new Date());
+        assertTrue("Adding expense failed.", expense2ok);
+        
+        privateCard1 = wallet.getCard(privateCard1Id);// Update!
+        assertTrue("Wrong amount.", new BigDecimal("-203.36").compareTo(privateCard1.getAmount()) == 0);
+        
+        // ...
+        
+        List<Transaction> privateTransactions = wallet.history(privateCard1Id);
         
         assertNotNull("Error at get history transactions.", privateTransactions);
         
-        assertEquals("The number of transactions is incorrect.",
-                6, privateTransactions.size());
+        assertEquals("The number of transactions is incorrect.", 4, privateTransactions.size());
         
         
-        List<Transaction> sharedTransactions = wallet.history(privateCardId);
-        assertEquals("The number of transactions is incorrect.",
-                6, sharedTransactions.size());
+        // ...
         
         
-        // Remove same person for shared
-        wallet.removeShare(sharedCardtId, personId);
         
-        // Show shared persons
-        wallet.getShared(sharedCardtId);
+        boolean card1Deleted = wallet.removeCard(privateCard1Id);
+        assertTrue("Deleting card failed.", card1Deleted);
         
-        // Remove all accounts        
-        wallet.removeCard(privateCard.getId());
-        wallet.removeCard(sharedCard.getId());
+        boolean card2Deleted = wallet.removeCard(privateCard2Id);
+        assertTrue("Deleting card failed.", card2Deleted);
+        
+        boolean card3Deleted = wallet.removeCard(sharedCardId);
+        assertTrue("Deleting card failed.", card3Deleted);
     }
-
+    
+    @Test
+    public void distribution() {
+        int ownerId = 1;
+        int personId = 2;
+        
+        int privateCardId = wallet.addCard(ownerId, "Private account");
+        assertTrue("Creating card failed.", (privateCardId>0));
+        
+        int sharedCardId = wallet.addCard(ownerId, "Shared account");
+        assertTrue("Creating card failed.", (sharedCardId>0));
+        
+        Card privateCard = wallet.getCard(privateCardId);
+        assertNotNull("Get card failed.", privateCard);
+        
+        Card sharedCard = wallet.getCard(sharedCardId);
+        assertNotNull("Get card failed.", sharedCard);
+        
+        assertTrue("Wrong amount.", new BigDecimal(BigInteger.ZERO).compareTo(privateCard.getAmount()) == 0);
+        assertTrue("Wrong amount.", new BigDecimal(BigInteger.ZERO).compareTo(sharedCard.getAmount()) == 0);
+        
+        Map<Integer, Integer> ratio = new HashMap<>();
+        ratio.put(privateCardId, 40);
+        ratio.put(sharedCardId, 60);
+        int distribId = wallet.addDistribution(ownerId, "40-60", ratio);
+        assertTrue("Creating distribution failed.", (distribId>0));
+        
+        boolean distOk = wallet.incomeDistrib(distribId, ownerId, new BigDecimal(1000), "Big income.", new Date());
+        assertTrue("Incoming distribution failed.", distOk);
+        
+        privateCard = wallet.getCard(privateCardId);// Update!
+        assertTrue("Wrong amount.", new BigDecimal(400).compareTo(privateCard.getAmount()) == 0);
+        
+        sharedCard = wallet.getCard(sharedCardId);// Update!
+        assertTrue("Wrong amount.", new BigDecimal(600).compareTo(sharedCard.getAmount()) == 0);
+        
+        boolean distribDeleted = wallet.removeDistribution(distribId);
+        assertTrue("Deleting distribution failed.", distribDeleted);
+        
+        boolean card1Deleted = wallet.removeCard(privateCardId);
+        assertTrue("Deleting card failed.", card1Deleted);
+        
+        boolean card2Deleted = wallet.removeCard(sharedCardId);
+        assertTrue("Deleting card failed.", card2Deleted);
+    }
+    
 }
