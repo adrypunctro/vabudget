@@ -4,9 +4,7 @@
  * and open the template in the editor.
  */
 
-import vabudget.ModelDatabase;
 import vabudget.Wallet;
-import vabudget.ModelREST;
 import vabudget.WalletPocket;
 import vabudget.Transaction;
 import vabudget.Card;
@@ -15,13 +13,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import vabudget.DAOFactory;
+import vabudget.Distribution;
+import vabudget.Share;
 
 /**
  *
@@ -58,13 +58,13 @@ public class ApiJUnitTest {
         int ownerId = 1;
         int personId = 2;
         String privateCardLabel = "Private Debit Card";
-        String sharedCardLabel = "Shared Debit Card";
+        String sharedCardLabel  = "Shared Debit Card";
         // ------
         
         Wallet wallet = new WalletPocket();
         Map<String, String> config = new HashMap<>();
         wallet.connectWith(
-                new ModelDatabase("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/VABUDGET", "vadry", "12wq!@WQ", "vab_")
+            DAOFactory.getDAOFactory(DAOFactory.MYSQL)
         );
         
         // Create two accounts
@@ -87,8 +87,25 @@ public class ApiJUnitTest {
         assertTrue("The account could not be shared.", sharedok);
         
         // Show shared persons
-        Map<Integer, String> shareds = wallet.getShared(sharedCardtId);
+        List<Share> shareds = wallet.getShared(sharedCardtId);
         
+        assertEquals("The number of shared is incorrect.", 1, shareds.size());
+        
+        Share entry = shareds.iterator().next();
+        
+        assertSame("The partner is not correct..", personId, entry.getPersonId());
+        assertEquals("Default shared is incorrect.", "0", entry.getStatus());
+
+        wallet.sharedAccept(sharedCardtId, personId);
+        
+        List<Share> sharedsUpdated = wallet.getShared(sharedCardtId);// Update!
+        
+        assertEquals("The number of shared is incorrect.", 1, sharedsUpdated.size());
+        
+        Share entryUpdated = sharedsUpdated.iterator().next();
+        
+        assertSame("The partner is not correct..", personId, entryUpdated.getPersonId());
+        assertEquals("Shared status is incorrect.", "1", entryUpdated.getStatus());
         
         assertEquals("Account does not have the correct amount.",
                 new BigDecimal("0.00"), privateCard.getAmount());
@@ -153,6 +170,33 @@ public class ApiJUnitTest {
         sharedCard = wallet.getCard(sharedCardtId);// Update!
         assertEquals("Account does not have the correct amount.",
                 new BigDecimal("-299.90"), sharedCard.getAmount());
+        
+        // Income Distribution
+        Map<Integer, Integer> ratio = new HashMap<>();
+        ratio.put(privateCardId, 40);
+        ratio.put(sharedCardtId, 60);
+        int distribId = wallet.addDistribution(ownerId, "40-60", ratio);
+        assertTrue("The distribution could not be added.", (distribId>0));
+        
+        /*List<Distribution> incomeDistributions = wallet.getDistributions(ownerId);
+        
+        Distribution distrib = incomeDistributions.iterator().next();
+        
+        Map<Integer, Integer> distribRatio = distrib.getRatio();
+        
+        BigDecimal beforeAmount = privateCard.getAmount();
+        BigDecimal afterAmount = beforeAmount.add(new BigDecimal(1000*(distribRatio.get(privateCardId)/100.0f)));
+        afterAmount.setScale(2);
+        wallet.incomeDistrib(distrib.getId(), ownerId, new BigDecimal("1000.00"), "Big income.", new Date());
+        
+        privateCard = wallet.getCard(privateCardId);// Update!
+        assertEquals("Account does not have the correct amount.",
+                afterAmount, privateCard.getAmount());
+        
+        sharedCard = wallet.getCard(sharedCardtId);// Update!
+        assertEquals("Account does not have the correct amount.",
+                new BigDecimal("499.90"), sharedCard.getAmount());*/
+        
         
         // Show history
         List<Transaction> privateTransactions = wallet.history(privateCardId);
