@@ -4,14 +4,18 @@ It is a java application, an extension of vadry.ro project, that helps you manag
 
 ## Usage
 
-
+### Create a wallet instance
+```java
+Wallet wallet = new WalletPoket();
+wallet.connectWith(
+    DAOFactory.getDAOFactory(DAOFactory.MYSQL)
+);
+```
 
 ### Wallet interface
 
 public int **addCard**(int ownerId, String label);
 ```java
-Wallet wallet = new WalletPoket();
-
 int ownerId = 1;// My Account ID
 int privateCardId = wallet.addCard(ownerId, "Economy 1");
 ```
