@@ -25,7 +25,7 @@ wallet.configure(localConfig);
 ```java
 public boolean configure(ServerConfig config)
 ```
-Example:
+> Example:
 ```java
 Wallet wallet = new WalletPoket();
 // Configure REST Server
@@ -46,7 +46,7 @@ You can also can change schema before - names of table and name of fields.
 ```java
 public boolean configure(SchemaConfig config)
 ```
-Example:
+> Example:
 ```java
 Wallet wallet = new WalletPoket();
 
@@ -73,7 +73,7 @@ This will return true if connect successful. False oherwise.
 public boolean connected()
 ```
 This will return true if you are connected to database. False oherwise.
-Example:
+> Example:
 ```java
 Wallet wallet = new WalletPoket();
 LocalConfig localConfig = new LocalConfig();
