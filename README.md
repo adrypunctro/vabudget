@@ -34,16 +34,12 @@ public boolean createSchema()
 This delete and create all tabels of wallet shema. Atention! You will lose all data of you wallet.
 ```java
 Wallet wallet = new WalletPoket();
+
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
-try
-{
-   wallet.configure(localConfig);
-}
-catch(MissingFields e)
-{
-    System.out.println("Configure error: " + e.getMessage());
-}
+// ...
+wallet.configure(localConfig);
+
 if (wallet.checkShema())
 {
    wallet.createSchema();
@@ -55,6 +51,23 @@ CREATE TABLE X (
    @todo: complete this
 );
 ```
+You can also configure schema before create it.
+```java
+Wallet wallet = new WalletPoket();
+
+LocalConfig localConfig = new LocalConfig();
+localConfig.DRIVER = "...";
+// ...
+wallet.configure(localConfig);
+
+SchemaConfig schemaConfig = new SchemaConfig();
+schemaConfig.PROFILE_TABLE_PRE = "wal_";
+schemaConfig.PROFILE_TABLE = "profile";
+// ...
+wallet.configure(schemaConfig);
+
+```
+Note: This is useful if you want to use more services that share one or more tables.
 
 ### 2.4 Connect to database
 ```java
