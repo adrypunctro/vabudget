@@ -7,8 +7,8 @@ It is a java application, an extension of vadry.ro project, that helps you manag
 Wallet wallet = new WalletPoket();
 ```
 
-## 2. Connect to local database
-### 2.1 Configure
+## 2. Connect to storage
+### 2.1 Configure local db/server
 ```java
 public boolean configure(LocalConfig config)
 ```
@@ -61,7 +61,7 @@ wallet.configure(schemaConfig);
 ```
 Note: This is useful if you want to use more services that share one or more tables.
 
-### 2.4 Connect to database
+### 2.4 Connect to database. Only for local
 ```java
 public boolean connect()
 ```
@@ -88,10 +88,21 @@ if (wallet.checkShema())
 }
 wallet.connect();
 ```
+### 2.5 Connect to server. Only for server
+```java
+public boolean connectivity()
+```
+This will return true if server is online. False otherwise.
 
----
-## Wallet interface
+## 3. Syncronization local with server
+```java
+public boolean sync()
+```
+This will be check if connected() and connectivity() is true. If not both are true, sync() return false.
+Otherwise, it will send all unsynchronize data from local to server and vice versa.
 
+## 4. Usage
+### 4.1 Cards
 public int **addCard**(int ownerId, String label);
 ```java
 int ownerId = 1;// My Account ID
@@ -110,7 +121,7 @@ public List\<Card\> **getCards**();
 ```java
 ```
 
----
+### 4.2 Transactions
 
 public boolean **income**(int cardId, int userId, BigDecimal amount, String description, Date datetime);
 ```java
@@ -125,7 +136,7 @@ public List\<Transaction\> **history**(int cardId);
 ```java
 ```
 
----
+### 4.3 Share
 
 public boolean **shareWith**(int cardId, int personId);
 ```java
@@ -143,7 +154,7 @@ public boolean **sharedReject**(int cardId, int personId);
 ```java
 ```
 
----
+### 4.4 Distribution
 
 public int **addDistribution**(int ownerId, String label, Map<Integer, Integer> ratio);
 ```java
@@ -158,7 +169,7 @@ public List\<Distribution\> **getDistributions**(int personId);
 ```java
 ```
 
----
+### 4.5 Distribution Share
 
 public boolean **shareDistributionWith**(int distribId, int personId);
 ```java
