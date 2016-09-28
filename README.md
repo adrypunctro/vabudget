@@ -31,8 +31,15 @@ wallet.configure(localConfig);
     
 You need create db schema manually by execute this statements in your database.
 ```sql
-CREATE TABLE X (
-   @todo: complete this
+CREATE TABLE wal_me (
+   key VARCHAR(100) PRIMARY KEY,
+   value VARCHAR(250)
+);
+INSERT INTO wal_me VALUES ('accountId',''), ('token','');
+
+CREATE TABLE wal_account (
+   accountId INT,
+   name VARCHAR(250)
 );
 ```
 You can also can change db schema - names of table and name of fields.
@@ -146,9 +153,9 @@ Card thisCard = wallet.getCard(2);
 ```
     
 ```java
-public List\<Card\> getCards();
+public List<Card> getCards();
 ```
-It return a empty list if no card was found.
+It return an empty list if no card was found.
 > Example:
 ```java
 List<Card> cards = wallet.getCards();
