@@ -19,7 +19,6 @@ Wallet wallet = new WalletPoket();
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
 // ...
-
 wallet.configure(localConfig);
 ```
 ```java
@@ -32,7 +31,6 @@ Wallet wallet = new WalletPoket();
 ServerConfig serverConfig = new ServerConfig();
 serverConfig.DRIVER = "...";
 // ...
-
 wallet.configure(serverConfig);
 ```
 ### 2.2 Create database schema for local storage
@@ -49,18 +47,15 @@ public boolean configure(SchemaConfig config)
 > Example:
 ```java
 Wallet wallet = new WalletPoket();
-
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
 // ...
 wallet.configure(localConfig);
-
 SchemaConfig schemaConfig = new SchemaConfig();
 schemaConfig.PROFILE_TABLE_PRE = "wal_";
 schemaConfig.PROFILE_TABLE = "profile";
 // ...
 wallet.configure(schemaConfig);
-
 ```
 Note: This is useful if you want to use more services that share one or more tables.
 
@@ -78,14 +73,7 @@ This will return true if you are connected to database. False oherwise.
 Wallet wallet = new WalletPoket();
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
-try
-{
-   wallet.configure(localConfig);
-}
-catch(MissingFields e)
-{
-    System.out.println("Configure error: " + e.getMessage());
-}
+wallet.configure(localConfig);
 if (wallet.checkShema())
 {
    wallet.createSchema();
