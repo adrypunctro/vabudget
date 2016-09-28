@@ -9,49 +9,41 @@ Wallet wallet = new WalletPoket();
 
 ## 2. Connect to local database
 ### 2.1 Configure
-public boolean **configure**(LocalConfig config) throws **MissingFields**
+```java
+public boolean configure(LocalConfig config)
+```
 ```java
 Wallet wallet = new WalletPoket();
-LocalConfig localConfig = new LocalConfig();
-localConfig.DRIVER = "...";
-try
-{
-   wallet.configure(localConfig);
-}
-catch(MissingFields e)
-{
-    System.out.println("Configure error: " + e.getMessage());
-}
-```
-### 2.2 Create database schema
-```java
-public boolean checkShema()
-```
-This check each table and field to correspond with the required schema.
-```java
-public boolean createSchema()
-```
-This delete and create all tabels of wallet shema. Atention! You will lose all data of you wallet.
-```java
-Wallet wallet = new WalletPoket();
-
+// Configure local Database
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
 // ...
-wallet.configure(localConfig);
 
-if (wallet.checkShema())
-{
-   wallet.createSchema();
-}
+wallet.configure(localConfig);
 ```
-or you can create manually by execute this statements in your database.
+```java
+public boolean configure(ServerConfig config)
+```
+```java
+Wallet wallet = new WalletPoket();
+// Configure REST Server
+ServerConfig serverConfig = new ServerConfig();
+serverConfig.DRIVER = "...";
+// ...
+
+wallet.configure(serverConfig);
+```
+### 2.2 Create database schema for local storage
+You need create schema manually by execute this statements in your database.
 ```sql
 CREATE TABLE X (
    @todo: complete this
 );
 ```
-You can also configure schema before create it.
+You can also can change schema before - names of table and name of fields.
+```java
+public boolean configure(SchemaConfig config)
+```
 ```java
 Wallet wallet = new WalletPoket();
 
