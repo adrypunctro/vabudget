@@ -2,17 +2,44 @@
 # vabudget lib
 It is a java application, an extension of vadry.ro project, that helps you manage your personal finances.
 
-## Usage
 
-### Create a wallet instance
+## 1. Create a wallet instance
 ```java
 Wallet wallet = new WalletPoket();
-wallet.connectWith(
-    DAOFactory.getDAOFactory(DAOFactory.MYSQL)
-);
 ```
 
-### Wallet interface
+## 2. Configure with storage solution
+### 2.1 Connect to local database
+public boolean **configure**(LocalConfig config) throws **MissingFields**
+```java
+LocalConfig localConfig = new LocalConfig();
+localConfig.DRIVER = "...";
+try
+{
+   wallet.configure(localConfig);
+}
+catch(MissingFields e)
+{
+    System.out.println("Configure error: " + e.getMessage());
+}
+```
+### 2.2 Connect to web server
+public boolean **configure**(ServerConfig config) throws **MissingFields**
+```java
+ServerConfig serverConfig = new ServerConfig();
+serverConfig.DRIVER = "...";
+try
+{
+   wallet.configure(serverConfig);
+}
+catch(MissingFields e)
+{
+    System.out.println("Configure error: " + e.getMessage());
+}
+```
+
+---
+## Wallet interface
 
 public int **addCard**(int ownerId, String label);
 ```java
