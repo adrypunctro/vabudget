@@ -113,26 +113,47 @@ If we have a row with sync=1 and deleted=1, the row will be removed permanently.
 Both, offline and online, have same interface.
 ### 5.1 Cards
 ```java
-public int **addCard**(String label);
+public int addCard(String label);
 ```
 > Example:
 ```java
 int privateCardId = wallet.addCard("Economy 1");
 ```
     
-public int **addCard**(int ownerId, String label, BigDecimal initAmount);
 ```java
+public int addCard(String label, BigDecimal initAmount);
 ```
-public boolean **removeCard**(int cardId);
+> Example:
 ```java
+int privateCardId = wallet.addCard("Economy 1", new BigDecimal(200));
 ```
-public IAccount **getCard**(int cardId);
+    
 ```java
+public boolean removeCard(int cardId);
 ```
-public List\<Card\> **getCards**();
+> Example:
 ```java
+boolean wasRemoved = wallet.removeCard(5);
 ```
-
+    
+```java
+public Card getCard(int cardId);
+```
+It return null if the card doesn't exists.
+> Example:
+```java
+Card thisCard = wallet.getCard(2);
+```
+    
+```java
+public List\<Card\> getCards();
+```
+It return a empty list if no card was found.
+> Example:
+```java
+List<Card> cards = wallet.getCards();
+```
+    
 ### 5.2 Transactions
 
 public boolean **income**(int cardId, int userId, BigDecimal amount, String description, Date datetime);
