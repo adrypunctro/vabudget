@@ -21,6 +21,7 @@ localConfig.DRIVER = "...";
 // ...
 wallet.configure(localConfig);
 ```
+    
 ```java
 public boolean configure(ServerConfig config)
 ```
@@ -33,6 +34,7 @@ serverConfig.DRIVER = "...";
 // ...
 wallet.configure(serverConfig);
 ```
+    
 ### 2.2 Create database schema for local storage
 You need create schema manually by execute this statements in your database.
 ```sql
@@ -57,6 +59,7 @@ schemaConfig.PROFILE_TABLE = "profile";
 // ...
 wallet.configure(schemaConfig);
 ```
+    
 Note: This is useful if you want to use more services that share one or more tables.
 
 ### 2.4 Connect to database. Only for local
@@ -80,6 +83,7 @@ if (wallet.checkShema())
 }
 wallet.connect();
 ```
+    
 ### 2.5 Connect to server. Only for server
 ```java
 public boolean connectivity()
