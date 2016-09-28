@@ -3,12 +3,19 @@
 It is a java application, an extension of vadry.ro project, that helps you manage your personal finances.
 
 ## 1. Create a wallet instance
+## 1.1 Offline Wallet
+This will connect to a locally database. It can be used without internet.
 ```java
-Wallet wallet = new WalletPoket();
+Wallet localWallet = new OfflineWallet();
+```
+## 1.1 Online Wallet
+This will connect to a REST Web Server. It can be used only with internet.
+```java
+Wallet webWallet = new OnlineWallet();
 ```
 
-## 2. Connect to storage
-### 2.1 Configure local db/server
+## 2. Configure storage
+### 2.1 Offline Wallet configure to local db
 ```java
 public boolean configure(LocalConfig config)
 ```
@@ -22,27 +29,15 @@ localConfig.DRIVER = "...";
 wallet.configure(localConfig);
 ```
     
-```java
-public boolean configure(ServerConfig config)
-```
-> Example:
-```java
-Wallet wallet = new WalletPoket();
-// Configure REST Server
-ServerConfig serverConfig = new ServerConfig();
-serverConfig.DRIVER = "...";
-// ...
-wallet.configure(serverConfig);
-```
-    
-### 2.2 Create database schema for local storage
-You need create schema manually by execute this statements in your database.
+You need create db schema manually by execute this statements in your database.
 ```sql
 CREATE TABLE X (
    @todo: complete this
 );
 ```
-You can also can change schema before - names of table and name of fields.
+You can also can change db schema - names of table and name of fields.
+If you have a custom database.
+Note: This is useful if you want to use more services that share one or more tables.
 ```java
 public boolean configure(SchemaConfig config)
 ```
@@ -60,9 +55,22 @@ schemaConfig.PROFILE_TABLE = "profile";
 wallet.configure(schemaConfig);
 ```
     
-Note: This is useful if you want to use more services that share one or more tables.
-
-### 2.4 Connect to database. Only for local
+### 2.2 Online Wallet configure to web server
+```java
+public boolean configure(ServerConfig config)
+```
+> Example:
+```java
+Wallet wallet = new WalletPoket();
+// Configure REST Server
+ServerConfig serverConfig = new ServerConfig();
+serverConfig.DRIVER = "...";
+// ...
+wallet.configure(serverConfig);
+```
+    
+## 3. Connect to storage
+### 3.1 Offline Wallet connect to database.
 ```java
 public boolean connect()
 ```
@@ -84,26 +92,34 @@ if (wallet.checkShema())
 wallet.connect();
 ```
     
-### 2.5 Connect to server. Only for server
-```java
-public boolean connectivity()
-```
+### 3.2 Online Wallet connect to server.
 This will return true if server is online. False otherwise.
-
-## 3. Syncronization local with server
 ```java
-public boolean sync()
+public boolean connected()
 ```
-This will be check if connected() and connectivity() is true. If not both are true, sync() return false.
-Otherwise, it will send all unsynchronize data from local to server and vice versa.
+Note: The Online Wallet don't have connect() method because the web server it supposed full time connected with database.
 
-## 4. Usage
-### 4.1 Cards
-public int **addCard**(int ownerId, String label);
+## 4. Syncronization between Offline Wallet and Online Wallet
 ```java
-int ownerId = 1;// My Account ID
-int privateCardId = wallet.addCard(ownerId, "Economy 1");
+public static boolean sync(Wallet primaryWallet, Wallet secondaryWallet)
 ```
+This will be check if connected() of both wallet is true. If not both are true, sync() return false.
+Otherwise, it will send through and through unsynchronized data.
+Note: (How work) Each table from database have a field named *sync* ENUM(0,1) and a field named *deleted* ENUM(0,1).
+It will send all data with sync = 0. After execute the appropriate statement, sync become 1.
+If we have a row with sync=1 and deleted=1, the row will be removed permanently.
+
+## 5. Usage
+Both, offline and online, have same interface.
+### 5.1 Cards
+```java
+public int **addCard**(String label);
+```
+> Example:
+```java
+int privateCardId = wallet.addCard("Economy 1");
+```
+    
 public int **addCard**(int ownerId, String label, BigDecimal initAmount);
 ```java
 ```
@@ -117,7 +133,7 @@ public List\<Card\> **getCards**();
 ```java
 ```
 
-### 4.2 Transactions
+### 5.2 Transactions
 
 public boolean **income**(int cardId, int userId, BigDecimal amount, String description, Date datetime);
 ```java
@@ -132,7 +148,7 @@ public List\<Transaction\> **history**(int cardId);
 ```java
 ```
 
-### 4.3 Share
+### 5.3 Share
 
 public boolean **shareWith**(int cardId, int personId);
 ```java
@@ -150,7 +166,7 @@ public boolean **sharedReject**(int cardId, int personId);
 ```java
 ```
 
-### 4.4 Distribution
+### 5.4 Distribution
 
 public int **addDistribution**(int ownerId, String label, Map<Integer, Integer> ratio);
 ```java
@@ -165,7 +181,7 @@ public List\<Distribution\> **getDistributions**(int personId);
 ```java
 ```
 
-### 4.5 Distribution Share
+### 5.5 Distribution Share
 
 public boolean **shareDistributionWith**(int distribId, int personId);
 ```java
