@@ -214,3 +214,7 @@ public boolean **sharedDistributionReject**(int distribId, int personId);
 ```java
 ```
 
+## UML Scheme
+![alt text][uml-scheme]
+
+[uml-scheme]: https://raw.githubusercontent.com/adrypunctro/vabudget/master/vabudget-uml-scheme.png
