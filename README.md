@@ -2,15 +2,7 @@
 # vabudget lib
 It is a java application, an extension of vadry.ro project, that helps you manage your personal finances.
 
-## 1. Create a configure object
-### 1.1 Offline Wallet configure to local db
-```java
-// Configure local Database
-LocalConfig localConfig = new LocalConfig();
-localConfig.DRIVER = "...";
-// ...
-```
-    
+## 0. Set up database
 You need create db schema manually by execute this statements in your database.
 ```sql
 CREATE TABLE wal_me (
@@ -24,6 +16,16 @@ CREATE TABLE wal_account (
    name VARCHAR(250)
 );
 ```
+
+## 1. Create a configure object
+### 1.1 Offline Wallet configure to local db
+```java
+// Configure local Database
+LocalConfig localConfig = new LocalConfig();
+localConfig.DRIVER = "...";
+// ...
+```
+    
 You can also can change db schema - names of table and name of fields.
 If you have a custom database.
 Note: This is useful if you want to use more services that share one or more tables.
