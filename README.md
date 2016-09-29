@@ -52,8 +52,7 @@ This will connect to a locally database. It can be used without internet.
 ```java
 // Configure local Database
 LocalConfig localConfig = new LocalConfig();
-localConfig.DRIVER = "...";
-// ...
+// ... See 1.1 Offline Wallet configure to local db
 
 Wallet localWallet = new OfflineWallet(localConfig);
 ```
@@ -63,7 +62,7 @@ This will connect to a REST Web Server. It can be used only with internet.
 // Configure REST Server
 ServerConfig serverConfig = new ServerConfig();
 serverConfig.DRIVER = "...";
-// ...
+// ... See 1.2 Online Wallet configure to web server
 Wallet webWallet = new OnlineWallet(serverConfig);
 ```
     
