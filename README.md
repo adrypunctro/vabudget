@@ -22,19 +22,17 @@ CREATE TABLE wal_account (
 ```java
 // Configure local Database
 LocalConfig localConfig = new LocalConfig();
-localConfig.DRIVER = "...";
-// ...
+localConfig.DRIVER = "com.mysql.jdbc.Driver";
+localConfig.DBURL  = "jdbc:mysql://localhost/database_name";
+localConfig.USER   = "username";
+localConfig.PASS   = "password";
 ```
     
 You can also can change db schema - names of table and name of fields.
 If you have a custom database.
 Note: This is useful if you want to use more services that share one or more tables.
 ```java
-LocalConfig localConfig = new LocalConfig();
-localConfig.DRIVER = "...";
-// ...
-wallet.configure(localConfig);
-SchemaConfig schemaConfig = new SchemaConfig();
+SchemaConfig mySchema = new SchemaConfig();
 schemaConfig.PROFILE_TABLE_PRE = "wal_";
 schemaConfig.PROFILE_TABLE = "profile";
 // ...
@@ -53,18 +51,23 @@ serverConfig.DRIVER = "...";
 This will connect to a locally database. It can be used without internet.
 ```java
 // Configure local Database
-LocalConfig localConfig = new LocalConfig();
+LocalConfig myConfig = new LocalConfig();
+// ... See 1.1 Offline Wallet configure to local db
+SchemaConfig mySchema = new SchemaConfig();
 // ... See 1.1 Offline Wallet configure to local db
 
-Wallet localWallet = new OfflineWallet(localConfig);
+// Init with default schema
+Wallet wallet1 = new OfflineWallet(myConfig);
+// Initi with mt schema
+Wallet wallet2 = new OfflineWallet(myConfig, mySchema);
 ```
 ## 2.1 Online Wallet
 This will connect to a REST Web Server. It can be used only with internet.
 ```java
 // Configure REST Server
 ServerConfig serverConfig = new ServerConfig();
-serverConfig.DRIVER = "...";
 // ... See 1.2 Online Wallet configure to web server
+
 Wallet webWallet = new OnlineWallet(serverConfig);
 ```
     
