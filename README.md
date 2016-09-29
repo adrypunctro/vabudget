@@ -2,31 +2,14 @@
 # vabudget lib
 It is a java application, an extension of vadry.ro project, that helps you manage your personal finances.
 
-## 1. Create a wallet instance
-## 1.1 Offline Wallet
-This will connect to a locally database. It can be used without internet.
-```java
-Wallet localWallet = new OfflineWallet();
-```
-## 1.1 Online Wallet
-This will connect to a REST Web Server. It can be used only with internet.
-```java
-Wallet webWallet = new OnlineWallet();
-```
-
-## 2. Configure storage
-### 2.1 Offline Wallet configure to local db
-```java
-public boolean configure(LocalConfig config)
-```
+## 1. Create a configure object
+### 1.1 Offline Wallet configure to local db
 > Example:
 ```java
-Wallet wallet = new WalletPoket();
 // Configure local Database
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
 // ...
-wallet.configure(localConfig);
 ```
     
 You need create db schema manually by execute this statements in your database.
@@ -45,12 +28,8 @@ CREATE TABLE wal_account (
 You can also can change db schema - names of table and name of fields.
 If you have a custom database.
 Note: This is useful if you want to use more services that share one or more tables.
-```java
-public boolean configure(SchemaConfig config)
-```
 > Example:
 ```java
-Wallet wallet = new WalletPoket();
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
 // ...
@@ -59,21 +38,40 @@ SchemaConfig schemaConfig = new SchemaConfig();
 schemaConfig.PROFILE_TABLE_PRE = "wal_";
 schemaConfig.PROFILE_TABLE = "profile";
 // ...
-wallet.configure(schemaConfig);
 ```
     
-### 2.2 Online Wallet configure to web server
+### 1.2 Online Wallet configure to web server
 ```java
 public boolean configure(ServerConfig config)
 ```
 > Example:
 ```java
-Wallet wallet = new WalletPoket();
 // Configure REST Server
 ServerConfig serverConfig = new ServerConfig();
 serverConfig.DRIVER = "...";
 // ...
-wallet.configure(serverConfig);
+```
+   
+## 2. Create a wallet instance
+## 2.1 Offline Wallet
+This will connect to a locally database. It can be used without internet.
+```java
+Wallet wallet = new WalletPoket();
+// Configure local Database
+LocalConfig localConfig = new LocalConfig();
+localConfig.DRIVER = "...";
+// ...
+
+Wallet localWallet = new OfflineWallet(localConfig);
+```
+## 2.1 Online Wallet
+This will connect to a REST Web Server. It can be used only with internet.
+```java
+// Configure REST Server
+ServerConfig serverConfig = new ServerConfig();
+serverConfig.DRIVER = "...";
+// ...
+Wallet webWallet = new OnlineWallet(serverConfig);
 ```
     
 ## 3. Connect to storage
