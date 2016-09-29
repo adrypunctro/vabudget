@@ -4,7 +4,6 @@ It is a java application, an extension of vadry.ro project, that helps you manag
 
 ## 1. Create a configure object
 ### 1.1 Offline Wallet configure to local db
-> Example:
 ```java
 // Configure local Database
 LocalConfig localConfig = new LocalConfig();
@@ -28,7 +27,6 @@ CREATE TABLE wal_account (
 You can also can change db schema - names of table and name of fields.
 If you have a custom database.
 Note: This is useful if you want to use more services that share one or more tables.
-> Example:
 ```java
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
@@ -41,10 +39,6 @@ schemaConfig.PROFILE_TABLE = "profile";
 ```
     
 ### 1.2 Online Wallet configure to web server
-```java
-public boolean configure(ServerConfig config)
-```
-> Example:
 ```java
 // Configure REST Server
 ServerConfig serverConfig = new ServerConfig();
