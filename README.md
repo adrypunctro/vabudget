@@ -219,6 +219,44 @@ public boolean **sharedDistributionReject**(int distribId, int personId);
 ```java
 ```
 
+## Full example
+```java
+// Configure local Database
+LocalConfig localConfig = new LocalConfig();
+localConfig.DRIVER = "com.mysql.jdbc.Driver";
+localConfig.DBURL  = "jdbc:mysql://localhost/database_name";
+localConfig.USER   = "username";
+localConfig.PASS   = "password";
+
+// Init local wallet with default schema
+Wallet localWallet = new OfflineWallet(localConfig);
+
+// Configure web server
+WebConfig webConfig = new WebConfig();
+
+// Init local wallet with default schema
+Wallet webWallet = new OnlineWallet(webConfig);
+
+// Create to local two cards
+int privateCardId = localWallet.addCard("My private card");
+int sharedCardId = localWallet.addCard("Shared card", new BigDecimal(100));
+
+Card privateCard = localWallet.getCard(privateCardId);
+Card sharedCard = localWallet.getCard(sharedCardId);
+
+sharedCard.shareWith(2);
+
+privateCard.income(new BigDecimal(150));
+privateCard.income(new BigDecimal("1220.5"), "Big income.");
+privateCard.income(new BigDecimal(88), "From past", new Date());
+privateCard.expense(new BigDecimal(150));
+sharedCard.expense(new BigDecimal("33.3"), "Small expense.");
+sharedCard.expense(new BigDecimal(20), "Lowest expense.", new Date());
+
+// Synchronize both wallets
+Wallet.sync(localWallet, webWallet);
+```
+
 ## UML Scheme
 ![alt text][uml-scheme]
 
