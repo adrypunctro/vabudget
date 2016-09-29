@@ -50,7 +50,6 @@ serverConfig.DRIVER = "...";
 ## 2.1 Offline Wallet
 This will connect to a locally database. It can be used without internet.
 ```java
-Wallet wallet = new WalletPoket();
 // Configure local Database
 LocalConfig localConfig = new LocalConfig();
 localConfig.DRIVER = "...";
