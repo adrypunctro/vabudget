@@ -2,7 +2,7 @@
 # vabudget lib
 It is a java application, an extension of vadry.ro project, that helps you manage your personal finances.
 
-## 0. Set up database
+## 0. Setup database
 You need create db schema manually by execute this statements in your database.
 ```sql
 CREATE TABLE wal_me (
