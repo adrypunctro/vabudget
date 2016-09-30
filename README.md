@@ -173,66 +173,90 @@ List<Card> cards = wallet.getCards();
 ```
     
 ### 5.2 Transactions
-
-public boolean **income**(int cardId, int userId, BigDecimal amount, String description, Date datetime);
+```java
+public boolean income(int cardId, BigDecimal amount, String description, Date datetime);
+```
 ```java
 ```
-public boolean **incomeDistrib**(int distribId, int userId, BigDecimal amount, String description, Date datetime);
+```java
+public boolean incomeDistrib(int distribId, BigDecimal amount, String description, Date datetime);
+```
 ```java
 ```
-public boolean **expense**(int cardId, int userId, BigDecimal amount, String description, Date datetime);
+```java
+public boolean expense(int cardId, BigDecimal amount, String description, Date datetime);
+```
 ```java
 ```
-public List\<Transaction\> **history**(int cardId);
+```java
+public List<Transaction> history(int cardId);
+```
 ```java
 ```
 
 ### 5.3 Share
 
-public boolean **shareWith**(int cardId, int personId);
+
 ```java
+public boolean shareWith(int cardId, int personId);
 ```
-public boolean **removeShare**(int cardId, int personId);
+
 ```java
+public boolean removeShare(int cardId, int personId);
 ```
-public List\<Share\> **getShared**(int cardId);
+
 ```java
+public Share getShared(int cardId, int personId);
 ```
-public boolean **sharedAccept**(int cardId, int personId);
+
 ```java
+public List<Share> getShared(int cardId);
 ```
-public boolean **sharedReject**(int cardId, int personId);
+
 ```java
+public boolean sharedAccept(int cardId);
+```
+
+```java
+public boolean sharedReject(int cardId);
 ```
 
 ### 5.4 Distribution
 
-public int **addDistribution**(int ownerId, String label, Map<Integer, Integer> ratio);
+
 ```java
+public int addDistribution(String label, Map<Integer, Integer> ratio);
 ```
-public boolean **removeDistribution**(int distribId);
+
 ```java
+public boolean removeDistribution(int distribId);
 ```
-public Distribution **getDistribution**(int distribId);
+
 ```java
+public Distribution getDistribution(int distribId);
 ```
-public List\<Distribution\> **getDistributions**(int personId);
+
 ```java
+public List<Distribution> getDistributions();
 ```
 
 ### 5.5 Distribution Share
 
-public boolean **shareDistributionWith**(int distribId, int personId);
+
 ```java
+public boolean shareDistributionWith(int distribId, int personId);
 ```
-public boolean **removeShareDistribution**(int distribId, int personId);
+
 ```java
+public boolean removeShareDistribution(int distribId, int personId);
 ```
-public boolean **sharedDistributionAccept**(int distribId, int personId);
+
 ```java
+public boolean sharedDistributionAccept(int distribId);
 ```
-public boolean **sharedDistributionReject**(int distribId, int personId);
+
 ```java
+public boolean sharedDistributionReject(int distribId);
 ```
 
 ## Full example
