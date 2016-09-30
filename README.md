@@ -240,8 +240,27 @@ public int getLabel();
 public int getAmount();
 ```
 
+### 5.2 Transaction interface (read-only methods)
+```java
+public int getId();
+```
+```java
+public int getUserId();
+```
+```java
+public String getDescription();
+```
+```java
+public TransactionType getType();
+```
+```java
+public BigDecimal getAmount();
+```
+```java
+public Date getDate();
+```
 
-### 5.2 Share interface (read-only methods)
+### 5.3 Share interface (read-only methods)
 ```java
 public int getCardId();
 ```
@@ -249,7 +268,7 @@ public int getCardId();
 public int getPersonId();
 ```
 
-### 5.3 Distribution interface (read-only methods)
+### 5.4 Distribution interface (read-only methods)
 ```java
 public int getId();
 ```
