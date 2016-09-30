@@ -129,73 +129,46 @@ If we have a row with sync=1 and deleted=1, the row will be removed permanently.
 
 ## 5. Usage
 Both, offline and online, have same interface.
-### 5.1 Cards
+### 5.1 Wallet interface
 ```java
-public int addCard(String label);
+public int addCard(int ownerId, String label);
 ```
-> Example:
+It added a new card with amount 0.
 ```java
-int privateCardId = wallet.addCard("Economy 1");
+public int addCard(int ownerId, String label, BigDecimal initAmount);
 ```
-    
-```java
-public int addCard(String label, BigDecimal initAmount);
-```
-> Example:
-```java
-int privateCardId = wallet.addCard("Economy 1", new BigDecimal(200));
-```
+It added a new card with an initial amount.
     
 ```java
 public boolean removeCard(int cardId);
 ```
-> Example:
-```java
-boolean wasRemoved = wallet.removeCard(5);
-```
-    
+Use .remove() when you want to remove a card.
 ```java
 public Card getCard(int cardId);
 ```
+Load a card with specific id.
 It return null if the card doesn't exists.
-> Example:
-```java
-Card thisCard = wallet.getCard(2);
-```
     
 ```java
-public List<Card> getCards();
+public List<Card> getCards(int ownerId);
 ```
 It return an empty list if no card was found.
-> Example:
-```java
-List<Card> cards = wallet.getCards();
-```
-    
-### 5.2 Transactions
-```java
-public boolean income(int cardId, BigDecimal amount, String description, Date datetime);
-```
-```java
-```
-```java
-public boolean incomeDistrib(int distribId, BigDecimal amount, String description, Date datetime);
-```
-```java
-```
-```java
-public boolean expense(int cardId, BigDecimal amount, String description, Date datetime);
-```
-```java
-```
+
 ```java
 public List<Transaction> history(int cardId);
 ```
+
 ```java
+public boolean income(int cardId, int userId, BigDecimal amount, String description, Date datetime);
 ```
 
-### 5.3 Share
+```java
+public boolean incomeDistrib(int distribId, int userId, BigDecimal amount, String description, Date datetime);
+```
 
+```java
+public boolean expense(int cardId, int userId, BigDecimal amount, String description, Date datetime);
+```
 
 ```java
 public boolean shareWith(int cardId, int personId);
@@ -212,7 +185,8 @@ public Share getShared(int cardId, int personId);
 ```java
 public List<Share> getShared(int cardId);
 ```
-
+Load a share with specific id.
+It return null if the share doesn't exists.
 ```java
 public boolean sharedAccept(int cardId);
 ```
@@ -221,11 +195,9 @@ public boolean sharedAccept(int cardId);
 public boolean sharedReject(int cardId);
 ```
 
-### 5.4 Distribution
-
 
 ```java
-public int addDistribution(String label, Map<Integer, Integer> ratio);
+public int addDistribution(int ownerId, String label, Map<Integer, Integer> ratio);
 ```
 
 ```java
@@ -235,13 +207,11 @@ public boolean removeDistribution(int distribId);
 ```java
 public Distribution getDistribution(int distribId);
 ```
-
+Load a distribution with specific id.
+It return null if the distribution doesn't exists.
 ```java
 public List<Distribution> getDistributions();
 ```
-
-### 5.5 Distribution Share
-
 
 ```java
 public boolean shareDistributionWith(int distribId, int personId);
@@ -258,6 +228,44 @@ public boolean sharedDistributionAccept(int distribId);
 ```java
 public boolean sharedDistributionReject(int distribId);
 ```
+
+### 5.2 Card interface (read-only methods)
+```java
+public int getId();
+```
+```java
+public int getLabel();
+```
+```java
+public int getAmount();
+```
+
+
+### 5.2 Share interface (read-only methods)
+```java
+public int getCardId();
+```
+```java
+public int getPersonId();
+```
+
+### 5.3 Distribution interface (read-only methods)
+```java
+public int getId();
+```
+```java
+public int getOwnerId();
+```
+```java
+public String getLabel();
+```
+```java
+public Map<Integer, Integer> getRation();
+```
+Return a map with cardId in keys and weight in values.
+Sum of all weight must been 100. 
+
+
 
 ## Full example
 ```java
