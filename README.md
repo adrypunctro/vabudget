@@ -9,11 +9,27 @@ CREATE TABLE wal_me (
    key VARCHAR(100) PRIMARY KEY,
    value VARCHAR(250)
 );
-INSERT INTO wal_me VALUES ('accountId',''), ('token','');
+INSERT INTO wal_me VALUES ('accountId','1'), ('isReadId','0');
 
 CREATE TABLE wal_account (
    accountId INT,
    name VARCHAR(250)
+);
+
+CREATE TABLE wal_cards (
+   cardId,
+   ownerId,
+   label,
+   amount
+);
+
+CREATE TABLE wal_transactions (
+   transId,
+   cardId,
+   personId,
+   description,
+   amount,
+   date
 );
 ```
 
