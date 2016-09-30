@@ -260,7 +260,7 @@ public int getOwnerId();
 public String getLabel();
 ```
 ```java
-public Map<Integer, Integer> getRation();
+public Map<Integer, Integer> getRatio();
 ```
 Return a map with cardId in keys and weight in values.
 Sum of all weight must been 100. 
