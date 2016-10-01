@@ -14,22 +14,22 @@ package vabudget;
  */
 
 public abstract class DAOFactory {
-    // List of DAO types supported by the factory
-    public static final int MYSQL = 1;
-
     // There will be a method for each DAO that can be 
     // created. The concrete factories will have to 
     // implement these methods.
+    public abstract boolean connected();
     public abstract CardDAO getCardDAO();
     public abstract TransactionDAO getTransactionDAO();
     public abstract DistributionDAO getDistributionDAO();
     public abstract ShareDAO getShareDAO();
     
 
-    public static DAOFactory getDAOFactory(int whichFactory) {
+    public static DAOFactory getDAOFactory(WalletConnection whichFactory, Config config) {
         switch (whichFactory) {
         case MYSQL:
-            return new MySQLDAOFactory();
+            return new MySQLDAOFactory(config);
+        case WEB:
+            return new MySQLDAOFactory(config);
         default:
             return null;
         }
